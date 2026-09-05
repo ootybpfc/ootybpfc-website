@@ -36,7 +36,12 @@ export default function App() {
         <Route path="/standings" element={<Standings />} />
         <Route path="*" element={<Home />} />
       </Routes>
-      <Toaster position="top-center" richColors offset={{ top: "76px" }} mobileOffset={{ top: "76px" }} />
+      <Toaster
+        position="top-center"
+        richColors
+        offset={{ top: "76px" }}
+        mobileOffset={{ top: "76px" }}
+      />
     </>
   );
 }
