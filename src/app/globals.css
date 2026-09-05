@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+:root {
+  --navy: #0a1628;
+  --navy-light: #0f1f3d;
+  --navy-lighter: #162a4a;
+  --green-accent: #00c853;
+  --green-dark: #00a844;
+  --gold: #ffd700;
+  --gold-muted: #c5a200;
+  --white: #ffffff;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--navy);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--navy); }
+::-webkit-scrollbar-thumb { background: var(--navy-lighter); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--green-accent); }
+
+.section-title {
+  font-size: 2.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+  background: linear-gradient(135deg, var(--white) 0%, var(--green-accent) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.section-subtitle { font-size: 1rem; color: var(--gray-400); max-width: 600px; margin: 0 auto; }
+
+.gradient-bg {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 50%, var(--navy) 100%);
+  background-size: 400% 400%; animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.particles-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.glow-green { box-shadow: 0 0 20px rgba(0, 200, 83, 0.3), 0 0 60px rgba(0, 200, 83, 0.1); }
+.glow-gold { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1); }
+
+.card-glass {
+  background: rgba(15, 31, 61, 0.8); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-glass:hover {
+  border-color: rgba(0, 200, 83, 0.3); transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 200, 83, 0.1);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--green-accent) 0%, var(--green-dark) 100%);
+  color: white; font-weight: 700; padding: 12px 28px; border-radius: 8px;
+  border: none; cursor: pointer; text-transform: uppercase;
+  letter-spacing: 0.05em; font-size: 0.875rem; transition: all 0.3s ease;
+  position: relative; overflow: hidden;
+}
+
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 200, 83, 0.4); }
+
+.btn-outline {
+  background: transparent; color: var(--green-accent); border: 2px solid var(--green-accent);
+  font-weight: 700; padding: 10px 26px; border-radius: 8px; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.875rem; transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: var(--green-accent); color: var(--navy);
+  transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 200, 83, 0.3);
+}
+
+.countdown-digit {
+  font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 3rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--green-accent), var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1;
+}
+
+@media (max-width: 768px) { .countdown-digit { font-size: 2rem; } .section-title { font-size: 1.75rem; } }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(0, 200, 83, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(0, 200, 83, 0.4); }
+}
+
+.stat-card { animation: pulse-glow 3s ease-in-out infinite; }
+
+.spinner {
+  border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--green-accent);
+  border-radius: 50%; width: 40px; height: 40px; animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
