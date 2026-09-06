@@ -55,13 +55,24 @@ non-JSON response and raises an explicit routing error instead.
 
 ### Pointing at a different backend
 
-The backend host appears in **two** places and both must be updated together:
+The backend host appears in **two** places that must never drift apart:
 
 1. `vercel.json` → `rewrites[0].destination` (production)
-2. `vite.config.ts` → `API_TARGET` default, or set `VITE_API_TARGET` locally (dev)
+2. `vite.config.ts` → `API_TARGET` default (dev)
+
+Use the helper rather than editing them by hand — updating only one makes the site work
+in dev and fail in production, which presents as a login bug rather than a routing
+mistake:
 
 ```bash
-VITE_API_TARGET=https://your-backend.example.com npm run dev
+node scripts/set-backend.mjs https://api.example.com   # update both
+node scripts/set-backend.mjs --show                    # print current, warn if they differ
+```
+
+For a one-off local override without editing files:
+
+```bash
+VITE_API_TARGET=http://localhost:8000 npm run dev
 ```
 
 > **Note on Emergent preview URLs:** `*.preview.emergentagent.com` hosts are ephemeral
