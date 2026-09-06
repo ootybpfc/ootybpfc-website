@@ -5,67 +5,47 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiGet, apiPost, ApiError } from "@/lib/api";
-import type {
-  AppUser,
-  Coach,
-  ClubEvent,
-  Organization,
-  Player,
-  PriceOption,
-  Sponsor,
-} from "@/lib/types";
-
-function errText(err: unknown, fallback: string) {
-  if (err instanceof ApiError) {
-    const body = err.body as { detail?: unknown } | null;
-    if (typeof body?.detail === "string") return body.detail;
-    if (Array.isArray(body?.detail)) {
-      const first = body.detail[0] as { msg?: string } | undefined;
-      if (first?.msg) return first.msg;
-    }
-  }
-  return fallback;
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      {children}
-    </div>
-  );
-}
-
+import type { AppUser, Coach, ClubEvent, Organization, Player, PriceOption, Sponsor } from "@/lib/types";
+function errText(err: unknown, fallback: string) { if (err instanceof ApiError) { const body = err.body as { detail?: unknown } | null; if (typeof body?.detail === "string") return body.detail; } return fallback; }
+function Field({ label, children }: { label: string; children: React.ReactNode }) { return <div className="space-y-2"><Label>{label}</Label>{children}</div>; }
 export default function AdminCreate() {
-  const qc = useQueryClient();
-  const [open, setOpen] = useState<string | null>(null);
-
-  const orgs = useQuery<Organization[]>({
-    queryKey: ["organizations"],
-    queryFn: () => apiGet<Organization[]>("/organizations"),
-  });
+  const qc = useQueryClient(); const [open, setOpen] = useState<string | null>(null);
+  const orgs = useQuery<Organization[]>({ queryKey: ["organizations"], queryFn: () => apiGet<Organization[]>("/organizations") });
+  const guardians = useQuery<AppUser[]>({ queryKey: ["guardians"], queryFn: () => apiGet<AppUser[]>("/guardians") });
+  const coaches = useQuery<Coach[]>({ queryKey: ["coaches"], queryFn: () => apiGet<Coach[]>("/coaches") });
+  const prices = useQuery<PriceOption[]>({ queryKey: ["prices"], queryFn: () => apiGet<PriceOption[]>("/prices") });
+  const orgList = orgs.data ?? [];
+  const orgLabels = Object.fromEntries(orgList.map((o) => [o.id, o.name]));
+  const guardianLabels = Object.fromEntries((guardians.data ?? []).map((g) => [g.id, g.name]));
+  const guardianDetail = Object.fromEntries((guardians.data ?? []).map((g) => [g.id, `${g.name} · ${g.email}`]));
+  const coachLabels = Object.fromEntries((coaches.data ?? []).map((c) => [c.id, `${c.name}${c.team_name ? ` · ${c.team_name}` : ""}`]));
+  const priceLabels = Object.fromEntries((prices.data ?? []).map((p) => [p.lookup_key, `${p.label} — ${p.currency.toUpperCase()} $${p.amount.toFixed(2)}`]));
+  function done(message: string, keys: string[]) { keys.forEach((k) => qc.invalidateQueries({ queryKey: [k] })); qc.invalidateQueries({ queryKey: ["admin", "stats"] }); setOpen(null); toast.success(message); }
+  const [g, setG] = useState({ name: "", email: "", org_id: "" });
+  const createGuardian = useMutation({ mutationFn: () => apiPost<AppUser>("/guardians", g), onSuccess: (u) => { setG({ name: "", email: "", org_id: "" }); done(`Guardian ${u.name} added`, ["guardians"]); }, onError: (e) => toast.error(errText(e, "Could not add guardian")) });
+  const [c, setC] = useState({ name: "", email: "", org_id: "", team_name: "", payout_percentage: "40", background_check_status: "pending", background_check_expiry: "" });
+  const createCoach = useMutation({ mutationFn: () => apiPost<Coach>("/coaches", { ...c, payout_percentage: Number(c.payout_percentage) }), onSuccess: (created) => { setC({ name: "", email: "", org_id: "", team_name: "", payout_percentage: "40", background_check_status: "pending", background_check_expiry: "" }); done(`Coach ${created.name} added`, ["coaches", "payouts"]); }, onError: (e) => toast.error(errText(e, "Could not add coach")) });
+  const [p, setP] = useState({ full_name: "", guardian_id: "", org_id: "", dob: "", jersey_no: "", position: "", team_name: "", coach_id: "", emergency_contact: "", medical_notes: "" });
+  const createPlayer = useMutation({ mutationFn: () => apiPost<Player>("/players", { ...p, jersey_no: Number(p.jersey_no), coach_id: p.coach_id || null }), onSuccess: (created) => { setP({ full_name: "", guardian_id: "", org_id: "", dob: "", jersey_no: "", position: "", team_name: "", coach_id: "", emergency_contact: "", medical_notes: "" }); done(`${created.full_name} registered`, ["players"]); }, onError: (e) => toast.error(errText(e, "Could not register player")) });
+  const [e, setE] = useState({ title: "", org_id: "", kind: "pickup", starts_at: "", location: "", coach_id: "", fee_lookup_key: "", late_cancel_rule: "waived" });
+  const createEvent = useMutation({ mutationFn: () => apiPost<ClubEvent>("/events", { title: e.title, org_id: e.org_id, kind: e.kind, starts_at: new Date(e.starts_at).toISOString(), location: e.location, coach_id: e.coach_id || null, fee_lookup_key: e.fee_lookup_key || null, late_cancel_rule: e.late_cancel_rule }), onSuccess: (created) => { setE({ title: "", org_id: "", kind: "pickup", starts_at: "", location: "", coach_id: "", fee_lookup_key: "", late_cancel_rule: "waived" }); done(`${created.title} scheduled`, ["events"]); }, onError: (err) => toast.error(errText(err, "Could not create event")) });
+  const [s, setS] = useState({ name: "", tier: "gold", raw_text: "", website: "" });
+  const createSponsor = useMutation({ mutationFn: () => apiPost<Sponsor>("/sponsors", s), onSuccess: (created) => { setS({ name: "", tier: "gold", raw_text: "", website: "" }); done(`${created.name} added`, ["sponsors"]); }, onError: (err) => toast.error(errText(err, "Could not add sponsor")) });
+  const orgSelect = (value: string, onChange: (v: string) => void, testid: string) => (<Select value={value} onValueChange={onChange}><SelectTrigger className="h-12 w-full" data-testid={testid}><SelectValue placeholder="Choose a location">{(v) => orgLabels[v as string] ?? "Choose a location"}</SelectValue></SelectTrigger><SelectContent>{orgList.map((o) => <SelectItem key={o.id} value={o.id}>{o.name} · {o.currency.toUpperCase()}</SelectItem>)}</SelectContent></Select>);
+  return (<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="admin-create-panel">
+    <CreateCard icon={<Users className="size-4" />} title="Add guardian" blurb="Create the guardian account first." testid="create-guardian" open={open === "guardian"} onOpenChange={(v) => setOpen(v ? "guardian" : null)} submitLabel="Create guardian" pending={createGuardian.isPending} disabled={!g.name || !g.email || !g.org_id} onSubmit={() => createGuardian.mutate()}><Field label="Full name"><Input className="h-12" value={g.name} onChange={(ev) => setG({ ...g, name: ev.target.value })} /></Field><Field label="Email"><Input type="email" className="h-12" value={g.email} onChange={(ev) => setG({ ...g, email: ev.target.value })} /></Field><Field label="Location">{orgSelect(g.org_id, (v) => setG({ ...g, org_id: v }), "guardian-org-select")}</Field></CreateCard>
+    <CreateCard icon={<UserCog className="size-4" />} title="Add coach" blurb="Creates account and payout record." testid="create-coach" open={open === "coach"} onOpenChange={(v) => setOpen(v ? "coach" : null)} submitLabel="Create coach" pending={createCoach.isPending} disabled={!c.name || !c.email || !c.org_id} onSubmit={() => createCoach.mutate()}><Field label="Full name"><Input className="h-12" value={c.name} onChange={(ev) => setC({ ...c, name: ev.target.value })} /></Field><Field label="Email"><Input type="email" className="h-12" value={c.email} onChange={(ev) => setC({ ...c, email: ev.target.value })} /></Field><Field label="Location">{orgSelect(c.org_id, (v) => setC({ ...c, org_id: v }), "coach-org-select")}</Field><Field label="Team"><Input className="h-12" value={c.team_name} onChange={(ev) => setC({ ...c, team_name: ev.target.value })} /></Field></CreateCard>
+    <CreateCard icon={<UserPlus className="size-4" />} title="Register player" blurb="Guardian-owned profile." testid="create-player" open={open === "player"} onOpenChange={(v) => setOpen(v ? "player" : null)} submitLabel="Register player" pending={createPlayer.isPending} disabled={!p.full_name || !p.guardian_id || !p.org_id || !p.dob || !p.jersey_no || !p.position} onSubmit={() => createPlayer.mutate()}><Field label="Player name"><Input className="h-12" value={p.full_name} onChange={(ev) => setP({ ...p, full_name: ev.target.value })} /></Field><Field label="Guardian"><Select value={p.guardian_id} onValueChange={(v: string) => setP({ ...p, guardian_id: v })}><SelectTrigger className="h-12 w-full"><SelectValue placeholder="Choose a guardian">{(v) => guardianLabels[v as string] ?? "Choose a guardian"}</SelectValue></SelectTrigger><SelectContent>{(guardians.data ?? []).map((gg) => <SelectItem key={gg.id} value={gg.id}>{guardianDetail[gg.id]}</SelectItem>)}</SelectContent></Select></Field><Field label="Location">{orgSelect(p.org_id, (v) => setP({ ...p, org_id: v }), "player-org-select")}</Field><div className="grid grid-cols-2 gap-3"><Field label="Date of birth"><Input type="date" className="h-12" value={p.dob} onChange={(ev) => setP({ ...p, dob: ev.target.value })} /></Field><Field label="Jersey"><Input type="number" className="h-12" value={p.jersey_no} onChange={(ev) => setP({ ...p, jersey_no: ev.target.value })} /></Field></div><Field label="Position"><Input className="h-12" value={p.position} onChange={(ev) => setP({ ...p, position: ev.target.value })} /></Field></CreateCard>
+    <CreateCard icon={<CalendarPlus className="size-4" />} title="Schedule event" blurb="Training, pickup or league match." testid="create-event" open={open === "event"} onOpenChange={(v) => setOpen(v ? "event" : null)} submitLabel="Schedule event" pending={createEvent.isPending} disabled={!e.title || !e.org_id || !e.starts_at || !e.location} onSubmit={() => createEvent.mutate()}><Field label="Title"><Input className="h-12" value={e.title} onChange={(ev) => setE({ ...e, title: ev.target.value })} /></Field><Field label="Location">{orgSelect(e.org_id, (v) => setE({ ...e, org_id: v }), "event-org-select")}</Field><Field label="Starts at"><Input type="datetime-local" className="h-12" value={e.starts_at} onChange={(ev) => setE({ ...e, starts_at: ev.target.value })} /></Field><Field label="Venue"><Input className="h-12" value={e.location} onChange={(ev) => setE({ ...e, location: ev.target.value })} /></Field></CreateCard>
+    <CreateCard icon={<Handshake className="size-4" />} title="Add sponsor" blurb="Appears on the public club page." testid="create-sponsor" open={open === "sponsor"} onOpenChange={(v) => setOpen(v ? "sponsor" : null)} submitLabel="Add sponsor" pending={createSponsor.isPending} disabled={!s.name || !s.raw_text} onSubmit={() => createSponsor.mutate()}><Field label="Name"><Input className="h-12" value={s.name} onChange={(ev) => setS({ ...s, name: ev.target.value })} /></Field><Field label="Description"><Textarea value={s.raw_text} onChange={(ev) => setS({ ...s, raw_text: ev.target.value })} /></Field></CreateCard>
+  </div>);
+}
+function CreateCard({ icon, title, blurb, testid, open, onOpenChange, children, onSubmit, submitLabel, pending, disabled }: { icon: React.ReactNode; title: string; blurb: string; testid: string; open: boolean; onOpenChange: (open: boolean) => void; children: React.ReactNode; onSubmit: () => void; submitLabel: string; pending: boolean; disabled: boolean }) {
+  return (<Dialog open={open} onOpenChange={onOpenChange}><DialogTrigger nativeButton={false} render={<Card className="cursor-pointer border-border transition-colors hover:border-crimson/50" data-testid={`${testid}-card`} />}><CardContent className="p-5 text-left"><div className="flex items-center justify-between text-crimson-bright">{icon}<Badge variant="outline" className="text-[10px] uppercase">New</Badge></div><p className="mt-3 font-heading text-base font-semibold">{title}</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{blurb}</p></CardContent></DialogTrigger><DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-md"><DialogHeader><DialogTitle className="font-heading uppercase">{title}</DialogTitle><DialogDescription>{blurb}</DialogDescription></DialogHeader><form className="space-y-4" onSubmit={(ev) => { ev.preventDefault(); onSubmit(); }} data-testid={`${testid}-form`}>{children}<Button type="submit" className="h-12 w-full bg-crimson text-white hover:bg-crimson-bright" disabled={pending || disabled} data-testid={`${testid}-submit`}>{pending ? "Saving…" : submitLabel}</Button></form></DialogContent></Dialog>);
+}
