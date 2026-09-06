@@ -8,15 +8,12 @@
 !.yarn/releases
 !.yarn/versions
 
+# build output (Vite)
+/dist
+/build
+
 # testing
 /coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
 
 # misc
 .DS_Store
@@ -30,10 +27,10 @@ yarn-error.log*
 
 # env files
 .env*
+!.env.example
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts

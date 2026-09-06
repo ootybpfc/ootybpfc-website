@@ -42,11 +42,11 @@ export default function AdminClasses() {
       <div className="mt-4 space-y-6" data-testid="class-list">
         {!sessions.isLoading && rows.length === 0 ? <p className="text-sm text-muted-foreground" data-testid="class-empty">No classes scheduled yet.</p> : Object.entries(grouped).map(([group, slots]) => (
           <div key={group}>
-            <p className="text-[11px] uppercase tracking-wider text-crimson-bright">{group}</p>
+            <p className="text-[11px] uppercase tracking-wider text-gold">{group}</p>
             <div className="mt-2 space-y-2">{slots.map((s) => (
               <Card key={s.id} className="border-border" data-testid={`class-row-${s.id}`}>
                 <CardContent className="flex flex-wrap items-center gap-4 p-4">
-                  <CalendarClock className="size-4 shrink-0 text-crimson-bright" />
+                  <CalendarClock className="size-4 shrink-0 text-gold" />
                   <div className="min-w-0 flex-1"><p className="truncate font-heading text-sm font-semibold">{s.weekday} · {s.start_time}–{s.end_time}</p><p className="mt-0.5 text-xs text-muted-foreground">{s.venue} · {s.enrolled_count}/{s.capacity} enrolled</p></div>
                   <Badge variant="outline" className="shrink-0 font-mono">{s.amount > 0 ? `${s.currency.toUpperCase()} $${s.amount.toFixed(2)}` : "Free"}</Badge>
                   <div className="flex gap-2">

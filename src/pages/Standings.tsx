@@ -64,7 +64,7 @@ export default function Standings() {
                                 className="size-6 shrink-0 rounded-full border border-border object-cover"
                               />
                             ) : null}
-                            <span className={r.team_name.includes("Ooty") ? "font-semibold text-crimson-bright" : ""}>
+                            <span className={r.team_name.includes("Ooty") ? "font-semibold text-gold" : ""}>
                               {r.team_name}
                             </span>
                           </span>

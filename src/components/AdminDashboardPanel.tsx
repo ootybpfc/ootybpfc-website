@@ -95,7 +95,7 @@ export default function AdminDashboardPanel() {
                   Collected ({code})
                 </p>
                 <p
-                  className="font-mono text-xl font-bold text-crimson-bright"
+                  className="font-mono text-xl font-bold text-gold"
                   data-testid={`dashboard-currency-${code}`}
                 >
                   ${amount.toFixed(2)}
@@ -243,7 +243,7 @@ export default function AdminDashboardPanel() {
                   </TableCell>
                   <TableCell className="text-right font-mono text-sm">
                     {p.outstanding > 0 ? (
-                      <span className="text-crimson-bright">${p.outstanding.toFixed(2)}</span>
+                      <span className="text-gold">${p.outstanding.toFixed(2)}</span>
                     ) : (
                       <span className="text-muted-foreground">\u2014</span>
                     )}
@@ -283,7 +283,7 @@ function Kpi({
   return (
     <Card className="border-border">
       <CardContent className="p-5">
-        <div className="text-crimson-bright">{icon}</div>
+        <div className="text-gold">{icon}</div>
         <p className="mt-3 font-mono text-xl font-bold sm:text-2xl" data-testid={testid}>
           {value}
         </p>

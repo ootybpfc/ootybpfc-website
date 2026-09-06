@@ -36,11 +36,14 @@ export default function App() {
         <Route path="/standings" element={<Standings />} />
         <Route path="*" element={<Home />} />
       </Routes>
+      {/* Bottom-right keeps toasts clear of the sticky header nav on desktop, and the
+          bottom offset clears the mobile portal tab bar. */}
       <Toaster
-        position="top-center"
+        position="bottom-right"
         richColors
-        offset={{ top: "76px" }}
-        mobileOffset={{ top: "76px" }}
+        closeButton
+        offset={{ bottom: "24px", right: "24px" }}
+        mobileOffset={{ bottom: "88px", left: "16px", right: "16px" }}
       />
     </>
   );
